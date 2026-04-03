@@ -5,21 +5,21 @@ import java.util.List;
 
 public class Route {
 
-    private List<com.higoodimdad.pksplits.Gate> startGates = new ArrayList<>();
-    private List<com.higoodimdad.pksplits.Gate> finishGates = new ArrayList<>();
-    private List<com.higoodimdad.pksplits.Gate> checkpoints = new ArrayList<>();
+    private List<Gate> startGates = new ArrayList<>();
+    private List<Gate> finishGates = new ArrayList<>();
+    private List<Gate> checkpoints = new ArrayList<>();
 
     // Adding
 
-    public void addStartGate(com.higoodimdad.pksplits.Gate gate) {
+    public void addStartGate(Gate gate) {
         startGates.add(gate);
     }
 
-    public void addCheckpoint(com.higoodimdad.pksplits.Gate gate) {
+    public void addCheckpoint(Gate gate) {
         checkpoints.add(gate);
     }
 
-    public void addFinishGate(com.higoodimdad.pksplits.Gate gate) {
+    public void addFinishGate(Gate gate) {
         finishGates.add(gate);
     }
 
@@ -39,16 +39,16 @@ public class Route {
 
     // Getters
 
-    public List<com.higoodimdad.pksplits.Gate> getStartGates() {
-        return new ArrayList<>(startGates);
+    public List<Gate> getStartGates() {
+        return startGates;
     }
 
-    public List<com.higoodimdad.pksplits.Gate> getCheckpoints() {
-        return new ArrayList<>(checkpoints);
+    public List<Gate> getCheckpoints() {
+        return checkpoints;
     }
 
-    public List<com.higoodimdad.pksplits.Gate> getFinishGates() {
-        return new ArrayList<>(finishGates);
+    public List<Gate> getFinishGates() {
+        return finishGates;
     }
 
     // Misc
@@ -58,4 +58,3 @@ public class Route {
     }
 
 }
-

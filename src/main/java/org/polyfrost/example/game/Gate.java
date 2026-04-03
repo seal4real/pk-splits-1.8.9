@@ -1,4 +1,4 @@
-package com.higoodimdad.pksplits;
+package org.polyfrost.example.game;
 
 import net.minecraft.util.AxisAlignedBB;
 
