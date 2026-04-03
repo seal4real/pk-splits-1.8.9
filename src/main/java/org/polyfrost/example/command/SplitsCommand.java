@@ -3,46 +3,46 @@ package org.polyfrost.example.command;
 import cc.polyfrost.oneconfig.utils.commands.annotations.Command;
 import cc.polyfrost.oneconfig.utils.commands.annotations.SubCommand;
 import cc.polyfrost.oneconfig.utils.commands.annotations.SubCommandGroup;
-import cc.polyfrost.oneconfig.libs.universal.UChat;
+import org.polyfrost.example.ParkourSplits;
 
-@Command(value = "splits", description = "Manage split points and split HUD")
+@Command(value = "splits", description = "For the Parkour Splits mod")
 public class SplitsCommand {
 
     @SubCommand(description = "Show split stats")
     private void stats() {
-        UChat.chat("Called /splits stats");
+        ParkourSplits.manager.stats();
     }
 
-    @SubCommand(description = "Toggle splits display")
+    @SubCommand(description = "Toggle splits on/off")
     private void toggle() {
-        UChat.chat("Called /splits toggle");
+        ParkourSplits.manager.toggle();
     }
 
     @SubCommandGroup(value = "add")
     private class AddGroup {
 
-        @SubCommand(description = "Add a start gate")
+        @SubCommand(description = "Add a start gate at your position")
         private void start() {
-            UChat.chat("Called /splits add start");
+            ParkourSplits.manager.addStart();
         }
 
-        @SubCommand(description = "Add a checkpoint gate")
+        @SubCommand(description = "Add a checkpoint gate at your position")
         private void checkpoint() {
-            UChat.chat("Called /splits add checkpoint");
+            ParkourSplits.manager.addCheckpoint();
         }
 
-        @SubCommand(description = "Add a finish gate")
+        @SubCommand(description = "Add a finish gate at your position")
         private void finish() {
-            UChat.chat("Called /splits add finish");
+            ParkourSplits.manager.addFinish();
         }
     }
 
     @SubCommandGroup(value = "remove")
     private class RemoveGroup {
 
-        @SubCommand(description = "Remove the gate at the player position")
+        @SubCommand(description = "Remove the gate you are standing in")
         private void gate() {
-            UChat.chat("Called /splits remove gate");
+            ParkourSplits.manager.removeGateAtPlayer();
         }
     }
 }
