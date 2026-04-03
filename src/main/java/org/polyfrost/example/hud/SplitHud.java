@@ -1,6 +1,7 @@
 package org.polyfrost.example.hud;
 
 import cc.polyfrost.oneconfig.config.annotations.Exclude;
+import cc.polyfrost.oneconfig.config.annotations.Slider;
 import cc.polyfrost.oneconfig.hud.Hud;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 import net.minecraft.client.Minecraft;
@@ -19,10 +20,17 @@ public class SplitHud extends Hud {
     @Exclude private static final int PADDING = 2;
     @Exclude private static final long SHOW_DURATION_MILLIS = 1000;
 
-    private long elapsedMillis;
-    private long deltaMillis;
-    private boolean hasDelta;
-    private long triggeredTimeMillis;
+    @Slider(
+            name = "Delta Scale",
+            min = 0.70f,
+            max = 1.0f
+    )
+    public float deltaScale = 0.90f;
+
+    @Exclude private long elapsedMillis;
+    @Exclude private long deltaMillis;
+    @Exclude private boolean hasDelta;
+    @Exclude private long triggeredTimeMillis;
 
     public SplitHud() {
         super(true);
@@ -47,11 +55,10 @@ public class SplitHud extends Hud {
         Gui.drawRect(0, 0, elapsedBoxWidth, boxHeight, COLOR_BLACK);
         mc.fontRendererObj.drawString(elapsedText, PADDING, PADDING + 1, COLOR_WHITE);
 
-        // Delta box — only shown if there is a delta, right-aligned under elapsed
+        // Delta box — nested scale transform so it can be sized independently
         if (example || hasDelta) {
             String deltaText = example ? "+0.000" : TimeUtils.formatDelta(deltaMillis);
             int deltaBoxWidth = mc.fontRendererObj.getStringWidth(deltaText) + 2 * PADDING;
-            int deltaX = elapsedBoxWidth - deltaBoxWidth;
 
             int deltaColor;
             if (example || deltaMillis == 0) {
@@ -62,8 +69,17 @@ public class SplitHud extends Hud {
                 deltaColor = COLOR_RED;
             }
 
-            Gui.drawRect(deltaX, boxHeight, elapsedBoxWidth, boxHeight + boxHeight, deltaColor);
-            mc.fontRendererObj.drawString(deltaText, deltaX + PADDING, boxHeight + PADDING + 1, COLOR_WHITE);
+            // Translate to the delta's position in parent space first (float precision) then apply the scale
+            float deltaOffsetX = elapsedBoxWidth - deltaBoxWidth * deltaScale;
+
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(deltaOffsetX, boxHeight, 0);
+            GlStateManager.scale(deltaScale, deltaScale, 1f);
+
+            Gui.drawRect(0, 0, deltaBoxWidth, boxHeight, deltaColor);
+            mc.fontRendererObj.drawString(deltaText, PADDING, PADDING + 1, COLOR_WHITE);
+
+            GlStateManager.popMatrix();
         }
 
         GlStateManager.popMatrix();
@@ -82,7 +98,7 @@ public class SplitHud extends Hud {
         Minecraft mc = Minecraft.getMinecraft();
         int fontHeight = (mc == null || mc.fontRendererObj == null) ? 9 : mc.fontRendererObj.FONT_HEIGHT;
         int singleBox = fontHeight + 2 * PADDING;
-        return ((example || hasDelta) ? singleBox * 2 : singleBox) * scale;
+        return singleBox * ((example || hasDelta) ? 1f + deltaScale : 1f) * scale;
     }
 
     public void showSplit(long elapsedMillis) {
