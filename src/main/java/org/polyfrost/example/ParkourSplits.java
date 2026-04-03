@@ -1,5 +1,7 @@
 package org.polyfrost.example;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.polyfrost.example.command.SplitsCommand;
 import org.polyfrost.example.config.TestConfig;
 import cc.polyfrost.oneconfig.events.event.InitializationEvent;
@@ -20,6 +22,7 @@ public class ParkourSplits {
     public static final String MODID = "@ID@";
     public static final String NAME = "@NAME@";
     public static final String VERSION = "@VER@";
+    public static final Logger LOGGER = LogManager.getLogger(NAME);
     @Mod.Instance(MODID)
     public static ParkourSplits INSTANCE; // Adds the instance of the mod, so we can access other variables.
     public static TestConfig config;
