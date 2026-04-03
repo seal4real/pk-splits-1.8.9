@@ -1,6 +1,6 @@
 package org.polyfrost.example;
 
-import org.polyfrost.example.command.ExampleCommand;
+import org.polyfrost.example.command.SplitsCommand;
 import org.polyfrost.example.config.TestConfig;
 import cc.polyfrost.oneconfig.events.event.InitializationEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -28,6 +28,6 @@ public class ParkourSplits {
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent event) {
         config = new TestConfig();
-        CommandManager.INSTANCE.registerCommand(new ExampleCommand());
+        CommandManager.INSTANCE.registerCommand(new SplitsCommand());
     }
 }
