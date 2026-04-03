@@ -11,13 +11,13 @@ import cc.polyfrost.oneconfig.config.data.ModType;
  * The main Config entrypoint that extends the Config type and inits the config options.
  * See <a href="https://docs.polyfrost.cc/oneconfig/config/adding-options">this link</a> for more config Options
  */
-public class TestConfig extends Config {
+public class SplitsConfig extends Config {
     @HUD(
             name = "Split Hud"
     )
     public SplitHud hud = new SplitHud();
 
-    public TestConfig() {
+    public SplitsConfig() {
         super(new Mod(ParkourSplits.NAME, ModType.THIRD_PARTY), ParkourSplits.MODID + ".json");
         initialize();
     }
