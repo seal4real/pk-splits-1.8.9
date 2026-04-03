@@ -1,6 +1,6 @@
 package org.polyfrost.example.command;
 
-import org.polyfrost.example.ExampleMod;
+import org.polyfrost.example.ParkourSplits;
 import cc.polyfrost.oneconfig.utils.commands.annotations.Command;
 import cc.polyfrost.oneconfig.utils.commands.annotations.Main;
 
@@ -10,12 +10,12 @@ import cc.polyfrost.oneconfig.utils.commands.annotations.Main;
  *
  * @see Command
  * @see Main
- * @see ExampleMod
+ * @see ParkourSplits
  */
-@Command(value = ExampleMod.MODID, description = "Access the " + ExampleMod.NAME + " GUI.")
+@Command(value = ParkourSplits.MODID, description = "Access the " + ParkourSplits.NAME + " GUI.")
 public class ExampleCommand {
     @Main
     private void handle() {
-        ExampleMod.INSTANCE.config.openGui();
+        ParkourSplits.INSTANCE.config.openGui();
     }
 }
