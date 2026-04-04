@@ -3,10 +3,10 @@ package org.polyfrost.example.game;
 import net.minecraft.util.AxisAlignedBB;
 
 public class Gate {
-    private final double x;
-    private final double y;
-    private final double z;
-    private final float yaw; // degrees, Minecraft convention (0 = south, 90 = west)
+    private final int x;   // world X * 10
+    private final int y;   // world Y * 10
+    private final int z;   // world Z * 10
+    private final int yaw; // degrees, 0–359
 
     private float width = 3.0f;
     private float height = 1.5f;
@@ -14,20 +14,38 @@ public class Gate {
 
     // For Gson deserialization
     private Gate() {
-        this(0, 0, 0, 0f);
+        this(0, 0, 0, 0);
     }
 
-    public Gate(double x, double y, double z, float yaw) {
+    /** Construct from raw integer values (already scaled 10x / integer degrees) */
+    public Gate(int x, int y, int z, int yaw) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.yaw = yaw;
     }
 
-    public double getX() { return x; }
-    public double getY() { return y; }
-    public double getZ() { return z; }
+    /** Construct from world coordinates (snaps to 0.1-block precision and integer degrees) */
+    public Gate(double worldX, double worldY, double worldZ, float worldYaw) {
+        this.x = (int) Math.round(worldX * 10);
+        this.y = (int) Math.round(worldY * 10);
+        this.z = (int) Math.round(worldZ * 10);
+        this.yaw = Math.round(worldYaw) % 360;
+    }
+
+    // World-coordinate getters (used by renderer, collision, etc.)
+
+    public double getX() { return x / 10.0; }
+    public double getY() { return y / 10.0; }
+    public double getZ() { return z / 10.0; }
     public float getYaw() { return yaw; }
+
+    // Raw integer getters (used by RouteCodec)
+
+    public int getRawX() { return x; }
+    public int getRawY() { return y; }
+    public int getRawZ() { return z; }
+    public int getRawYaw() { return yaw; }
 
     public float getHalfWidth()  { return width / 2; }
     public float getHalfHeight() { return height / 2; }
@@ -46,9 +64,9 @@ public class Gate {
         float halfDepth = getHalfDepth();
 
         // Gate centre
-        double gx = x;
-        double gy = y + halfHeight;
-        double gz = z;
+        double gx = getX();
+        double gy = getY() + halfHeight;
+        double gz = getZ();
 
         // Player AABB centre and half-extents
         double pcx = (player.minX + player.maxX) * 0.5;

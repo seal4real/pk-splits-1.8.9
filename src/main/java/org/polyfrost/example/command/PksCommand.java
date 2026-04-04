@@ -13,6 +13,11 @@ public class PksCommand {
         PksMod.manager.stats();
     }
 
+    @SubCommand(description = "Copy the last shared route code to clipboard")
+    private void copy() {
+        PksMod.manager.copyLastSharedCode();
+    }
+
     @SubCommand(description = "Toggle splits on/off")
     private void toggle() {
         PksMod.manager.toggle();
@@ -67,6 +72,16 @@ public class PksCommand {
         @SubCommand(description = "List all routes")
         private void list() {
             PksMod.manager.listRoutes();
+        }
+
+        @SubCommand(description = "Load a route from a shared code")
+        private void load(String routeName, String routeCode) {
+            PksMod.manager.loadRoute(routeName, routeCode);
+        }
+
+        @SubCommand(description = "Share the current route as a code")
+        private void share() {
+            PksMod.manager.shareRoute();
         }
     }
 }
