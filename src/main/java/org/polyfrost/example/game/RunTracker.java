@@ -71,7 +71,7 @@ public class RunTracker {
     }
 
     public boolean canHitFinish() {
-        return active && !isFinished() && hitCheckpointIndices.size() == route.size();
+        return active && !isFinished() && hitCheckpointIndices.size() == route.getCheckpoints().size();
     }
 
     public long getCurrentElapsedMillis() {
@@ -88,7 +88,7 @@ public class RunTracker {
     // Snapshot the current finished run as a RunResult. Only valid to call after hitFinish().
     public RunResult toResult() {
         List<Long> splits = new ArrayList<>();
-        for (int i = 0; i < route.size(); i++) {
+        for (int i = 0; i < route.getCheckpoints().size(); i++) {
             splits.add(checkpointSplitTimesMillis.getOrDefault(i, 0L));
         }
         return new RunResult(finishSplitMillis, splits);

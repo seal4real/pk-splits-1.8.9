@@ -31,8 +31,7 @@ public class GateRenderer {
 
     @SubscribeEvent
     public void onRenderWorld(RenderWorldLastEvent event) {
-        if (!enabled) return;
-        if (route.getStartGates().isEmpty() && route.getCheckpoints().isEmpty() && route.getFinishGates().isEmpty()) return;
+        if (!enabled || route.isEmpty()) return;
 
         Entity viewer = Minecraft.getMinecraft().getRenderViewEntity();
         if (viewer == null) return;

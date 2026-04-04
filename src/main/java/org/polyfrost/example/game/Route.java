@@ -53,8 +53,8 @@ public class Route {
 
     // Misc
 
-    public int size() {
-        return checkpoints.size();
+    public boolean isEmpty() {
+        return (startGates.size() + finishGates.size() + checkpoints.size()) == 0;
     }
 
 }
