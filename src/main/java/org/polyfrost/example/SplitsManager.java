@@ -15,15 +15,25 @@ import org.polyfrost.example.utils.JsonRepository;
 import org.polyfrost.example.utils.TimeUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class SplitsManager {
 
-    private final JsonRepository<Route> routeRepository;
-    private final JsonRepository<RunResult> pbRepository;
+    private static final String DEFAULT_ROUTE = "default";
+    private static final Pattern VALID_NAME = Pattern.compile("[a-z0-9_-]+");
 
+    private final File configDir;
+
+    private JsonRepository<Route> routeRepository;
+    private JsonRepository<RunResult> pbRepository;
+
+    private String currentRouteName;
     private Route route;
-    private final RunTracker runTracker;
+    private RunTracker runTracker;
     private RunResult personalBest;
     private RunResult previousRun;
 
@@ -34,19 +44,21 @@ public class SplitsManager {
     private boolean enabled = true;
 
     public SplitsManager(SplitHud splitHud) {
-        File configDir = new File(Minecraft.getMinecraft().mcDataDir, "config/pk-splits");
+        this.configDir = new File(Minecraft.getMinecraft().mcDataDir, "config/pk-splits");
+        this.splitHud = splitHud;
+
+        this.currentRouteName = loadActiveRouteName();
 
         this.routeRepository = new JsonRepository<>(
-                new File(configDir, "routes.json").toPath(), Route.class);
+                routeFile(currentRouteName).toPath(), Route.class);
         this.pbRepository = new JsonRepository<>(
-                new File(configDir, "pb.json").toPath(), RunResult.class);
+                pbFile(currentRouteName).toPath(), RunResult.class);
 
         this.route = routeRepository.load();
         if (route == null) route = new Route();
 
         this.personalBest = pbRepository.load();
         this.runTracker = new RunTracker(route);
-        this.splitHud = splitHud;
         this.gateRenderer = new GateRenderer(route);
     }
 
@@ -118,7 +130,7 @@ public class SplitsManager {
     }
 
     // -------------------------------------------------------------------------
-    // Command handlers
+    // Gate command handlers
     // -------------------------------------------------------------------------
 
     public void addStart() {
@@ -179,6 +191,7 @@ public class SplitsManager {
     }
 
     public void stats() {
+        UChat.chat("Active route: " + currentRouteName);
         String prev = previousRun == null ? "None" : TimeUtils.formatMillis(previousRun.getTotalTimeMillis());
         String pb   = personalBest == null ? "None" : TimeUtils.formatMillis(personalBest.getTotalTimeMillis());
         UChat.chat("Previous run: " + prev);
@@ -193,13 +206,137 @@ public class SplitsManager {
     }
 
     // -------------------------------------------------------------------------
+    // Route management command handlers
+    // -------------------------------------------------------------------------
+
+    public void createRoute(String name) {
+        name = name.toLowerCase();
+        if (!VALID_NAME.matcher(name).matches()) {
+            UChat.chat("Invalid route name. Use only a-z, 0-9, hyphens, and underscores.");
+            return;
+        }
+        if (routeFile(name).exists()) {
+            UChat.chat("Route '" + name + "' already exists.");
+            return;
+        }
+
+        // Save an empty route to create the file
+        new JsonRepository<>(routeFile(name).toPath(), Route.class).save(new Route());
+
+        // Auto-checkout the new route
+        switchToRoute(name);
+        UChat.chat("Created and switched to route: " + name);
+    }
+
+    public void removeRoute(String name) {
+        name = name.toLowerCase();
+        if (!routeFile(name).exists()) {
+            UChat.chat("Route '" + name + "' does not exist.");
+            return;
+        }
+        if (name.equals(currentRouteName)) {
+            UChat.chat("Cannot delete the active route. Checkout a different route first.");
+            return;
+        }
+
+        routeFile(name).delete();
+        pbFile(name).delete();
+        UChat.chat("Deleted route: " + name);
+    }
+
+    public void checkoutRoute(String name) {
+        name = name.toLowerCase();
+        if (!routeFile(name).exists()) {
+            UChat.chat("Route '" + name + "' does not exist.");
+            return;
+        }
+        if (name.equals(currentRouteName)) {
+            UChat.chat("Already on route: " + name);
+            return;
+        }
+
+        switchToRoute(name);
+        UChat.chat("Switched to route: " + name);
+    }
+
+    public void listRoutes() {
+        File routesDir = new File(configDir, "routes");
+        if (!routesDir.isDirectory()) {
+            UChat.chat("No routes found.");
+            return;
+        }
+
+        File[] files = routesDir.listFiles((dir, n) -> n.endsWith(".json"));
+        if (files == null || files.length == 0) {
+            UChat.chat("No routes found.");
+            return;
+        }
+
+        UChat.chat("Routes:");
+        for (File f : files) {
+            String name = f.getName().replace(".json", "");
+            String marker = name.equals(currentRouteName) ? " *" : "";
+            UChat.chat("  " + name + marker);
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Internal helpers
     // -------------------------------------------------------------------------
+
+    private void switchToRoute(String name) {
+        this.currentRouteName = name;
+        saveActiveRouteName(name);
+
+        this.routeRepository = new JsonRepository<>(routeFile(name).toPath(), Route.class);
+        this.pbRepository = new JsonRepository<>(pbFile(name).toPath(), RunResult.class);
+
+        this.route = routeRepository.load();
+        if (this.route == null) this.route = new Route();
+
+        this.personalBest = pbRepository.load();
+        this.previousRun = null;
+        this.wasInsideStart = false;
+
+        this.runTracker = new RunTracker(route);
+        this.gateRenderer.setRoute(route);
+    }
 
     private void onRouteModified() {
         routeRepository.save(route);
         personalBest = null;
         pbRepository.clear();
         runTracker.reset();
+    }
+
+    private File routeFile(String name) {
+        return new File(configDir, "routes/" + name + ".json");
+    }
+
+    private File pbFile(String name) {
+        return new File(configDir, "pb/" + name + ".json");
+    }
+
+    private String loadActiveRouteName() {
+        File file = new File(configDir, "active-route.txt");
+        if (file.exists()) {
+            try {
+                String name = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).trim();
+                if (!name.isEmpty()) return name;
+            } catch (IOException e) {
+                ParkourSplits.LOGGER.error("Failed to read active route.", e);
+            }
+        }
+        return DEFAULT_ROUTE;
+    }
+
+    private void saveActiveRouteName(String name) {
+        File file = new File(configDir, "active-route.txt");
+        try {
+            Files.createDirectories(file.getParentFile().toPath());
+            Files.write(file.toPath(), name.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            ParkourSplits.LOGGER.error("Failed to save active route.", e);
+        }
     }
 }

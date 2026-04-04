@@ -14,10 +14,14 @@ import org.polyfrost.example.game.Route;
 
 public class GateRenderer {
 
-    private final Route route;
+    private Route route;
     private boolean enabled = true;
 
     public GateRenderer(Route route) {
+        this.route = route;
+    }
+
+    public void setRoute(Route route) {
         this.route = route;
     }
 
