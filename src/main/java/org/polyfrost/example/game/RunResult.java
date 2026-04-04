@@ -5,26 +5,26 @@ import java.util.List;
 
 public class RunResult {
 
-    private long totalTimeMillis;
-    private List<Long> checkpointSplitTimesMillis;
+    private int totalTimeTicks;
+    private List<Integer> checkpointSplitTicks;
 
     // For Gson deserialization
     private RunResult() {}
 
-    public RunResult(long totalTimeMillis, List<Long> checkpointSplitTimesMillis) {
-        this.totalTimeMillis = totalTimeMillis;
-        this.checkpointSplitTimesMillis = new ArrayList<>(checkpointSplitTimesMillis);
+    public RunResult(int totalTimeTicks, List<Integer> checkpointSplitTicks) {
+        this.totalTimeTicks = totalTimeTicks;
+        this.checkpointSplitTicks = new ArrayList<>(checkpointSplitTicks);
     }
 
-    public long getTotalTimeMillis() {
-        return totalTimeMillis;
+    public int getTotalTimeTicks() {
+        return totalTimeTicks;
     }
 
-    public List<Long> getCheckpointSplitTimesMillis() {
-        return checkpointSplitTimesMillis;
+    public List<Integer> getCheckpointSplitTicks() {
+        return checkpointSplitTicks;
     }
 
     public boolean isFasterThan(RunResult other) {
-        return this.totalTimeMillis < other.totalTimeMillis;
+        return this.totalTimeTicks < other.totalTimeTicks;
     }
 }

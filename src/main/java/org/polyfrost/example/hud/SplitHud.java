@@ -27,8 +27,8 @@ public class SplitHud extends Hud {
     )
     public float deltaScale = 0.90f;
 
-    @Exclude private long elapsedMillis;
-    @Exclude private long deltaMillis;
+    @Exclude private int elapsedTicks;
+    @Exclude private int deltaTicks;
     @Exclude private boolean hasDelta;
     @Exclude private long triggeredTimeMillis;
 
@@ -44,7 +44,7 @@ public class SplitHud extends Hud {
         int fontHeight = mc.fontRendererObj.FONT_HEIGHT;
         int boxHeight = fontHeight + 2 * PADDING;
 
-        String elapsedText = example ? "0:00.000" : TimeUtils.formatMillis(elapsedMillis);
+        String elapsedText = example ? "0:00.00" : TimeUtils.formatTicks(elapsedTicks);
         int elapsedBoxWidth = mc.fontRendererObj.getStringWidth(elapsedText) + 2 * PADDING;
 
         GlStateManager.pushMatrix();
@@ -57,13 +57,13 @@ public class SplitHud extends Hud {
 
         // Delta box — nested scale transform so it can be sized independently
         if (example || hasDelta) {
-            String deltaText = example ? "+0.000" : TimeUtils.formatDelta(deltaMillis);
+            String deltaText = example ? "+0.00" : TimeUtils.formatDeltaTicks(deltaTicks);
             int deltaBoxWidth = mc.fontRendererObj.getStringWidth(deltaText) + 2 * PADDING;
 
             int deltaColor;
-            if (example || deltaMillis == 0) {
+            if (example || deltaTicks == 0) {
                 deltaColor = COLOR_GREY;
-            } else if (deltaMillis < 0) {
+            } else if (deltaTicks < 0) {
                 deltaColor = COLOR_BLUE;
             } else {
                 deltaColor = COLOR_RED;
@@ -89,7 +89,7 @@ public class SplitHud extends Hud {
     protected float getWidth(float scale, boolean example) {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc == null || mc.fontRendererObj == null) return 50 * scale;
-        String text = example ? "0:00.000" : TimeUtils.formatMillis(elapsedMillis);
+        String text = example ? "0:00.00" : TimeUtils.formatTicks(elapsedTicks);
         return (mc.fontRendererObj.getStringWidth(text) + 2 * PADDING) * scale;
     }
 
@@ -101,15 +101,15 @@ public class SplitHud extends Hud {
         return singleBox * ((example || hasDelta) ? 1f + deltaScale : 1f) * scale;
     }
 
-    public void showSplit(long elapsedMillis) {
-        this.elapsedMillis = elapsedMillis;
+    public void showSplit(int elapsedTicks) {
+        this.elapsedTicks = elapsedTicks;
         this.hasDelta = false;
         this.triggeredTimeMillis = System.currentTimeMillis();
     }
 
-    public void showSplit(long elapsedMillis, long deltaMillis) {
-        this.elapsedMillis = elapsedMillis;
-        this.deltaMillis = deltaMillis;
+    public void showSplit(int elapsedTicks, int deltaTicks) {
+        this.elapsedTicks = elapsedTicks;
+        this.deltaTicks = deltaTicks;
         this.hasDelta = true;
         this.triggeredTimeMillis = System.currentTimeMillis();
     }

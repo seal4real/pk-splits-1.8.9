@@ -13,16 +13,16 @@ public class RunTracker {
     private final Route route;
 
     private boolean active = false;
-    private long startTimeNanos = 0L;
+    private int elapsedTicks = 0;
 
     // Tracks which checkpoint indices have been hit this run
     private final Set<Integer> hitCheckpointIndices = new HashSet<>();
 
-    // Maps checkpoint index -> elapsed ms at time of hit; LinkedHashMap preserves hit order
-    private final Map<Integer, Long> checkpointSplitTimesMillis = new LinkedHashMap<>();
+    // Maps checkpoint index -> elapsed ticks at time of hit; LinkedHashMap preserves hit order
+    private final Map<Integer, Integer> checkpointSplitTicks = new LinkedHashMap<>();
 
-    // Elapsed ms when finish was crossed; null until finished
-    private Long finishSplitMillis = null;
+    // Elapsed ticks when finish was crossed; null until finished
+    private Integer finishSplitTicks = null;
 
     public RunTracker(Route route) {
         this.route = route;
@@ -30,30 +30,34 @@ public class RunTracker {
 
     // Run lifecycle
 
+    public void tick() {
+        if (active && !isFinished()) {
+            elapsedTicks++;
+        }
+    }
+
     public void hitStart() {
         reset();
         active = true;
-        startTimeNanos = System.nanoTime();
     }
 
     public void hitCheckpoint(int index) {
         if (!active || isFinished() || hitCheckpointIndices.contains(index)) return;
-        long elapsed = getCurrentElapsedMillis();
         hitCheckpointIndices.add(index);
-        checkpointSplitTimesMillis.put(index, elapsed);
+        checkpointSplitTicks.put(index, elapsedTicks);
     }
 
     public void hitFinish() {
         if (!canHitFinish()) return;
-        finishSplitMillis = getCurrentElapsedMillis();
+        finishSplitTicks = elapsedTicks;
     }
 
     public void reset() {
         active = false;
-        startTimeNanos = 0L;
+        elapsedTicks = 0;
         hitCheckpointIndices.clear();
-        checkpointSplitTimesMillis.clear();
-        finishSplitMillis = null;
+        checkpointSplitTicks.clear();
+        finishSplitTicks = null;
     }
 
     // State queries
@@ -63,7 +67,7 @@ public class RunTracker {
     }
 
     public boolean isFinished() {
-        return finishSplitMillis != null;
+        return finishSplitTicks != null;
     }
 
     public boolean isCheckpointHit(int index) {
@@ -74,30 +78,23 @@ public class RunTracker {
         return active && !isFinished() && hitCheckpointIndices.size() == route.getCheckpoints().size();
     }
 
-    public long getCurrentElapsedMillis() {
-        if (!active) return 0L;
-        return nanosToMillis(System.nanoTime() - startTimeNanos);
+    public int getCurrentElapsedTicks() {
+        return elapsedTicks;
     }
 
     // Results
 
-    public Map<Integer, Long> getCheckpointSplitTimesMillis() {
-        return Collections.unmodifiableMap(checkpointSplitTimesMillis);
+    public Map<Integer, Integer> getCheckpointSplitTicks() {
+        return Collections.unmodifiableMap(checkpointSplitTicks);
     }
 
     // Snapshot the current finished run as a RunResult. Only valid to call after hitFinish().
     public RunResult toResult() {
-        List<Long> splits = new ArrayList<>();
+        List<Integer> splits = new ArrayList<>();
         for (int i = 0; i < route.getCheckpoints().size(); i++) {
-            splits.add(checkpointSplitTimesMillis.getOrDefault(i, 0L));
+            splits.add(checkpointSplitTicks.getOrDefault(i, 0));
         }
-        return new RunResult(finishSplitMillis, splits);
-    }
-
-    // Helpers
-
-    private long nanosToMillis(long nanos) {
-        return nanos / 1_000_000L;
+        return new RunResult(finishSplitTicks, splits);
     }
 
 }

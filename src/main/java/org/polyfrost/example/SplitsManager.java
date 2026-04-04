@@ -81,6 +81,8 @@ public class SplitsManager {
         Minecraft mc = Minecraft.getMinecraft();
         if (!enabled || mc.thePlayer == null || mc.theWorld == null) return;
 
+        runTracker.tick();
+
         AxisAlignedBB playerBox = mc.thePlayer.getEntityBoundingBox();
 
         // 1. Start gates — rising edge triggers a new run
@@ -101,9 +103,9 @@ public class SplitsManager {
             for (int i = 0; i < checkpoints.size(); i++) {
                 if (!runTracker.isCheckpointHit(i) && checkpoints.get(i).intersects(playerBox)) {
                     runTracker.hitCheckpoint(i);
-                    long elapsed = runTracker.getCheckpointSplitTimesMillis().get(i);
-                    if (personalBest != null && i < personalBest.getCheckpointSplitTimesMillis().size()) {
-                        long delta = elapsed - personalBest.getCheckpointSplitTimesMillis().get(i);
+                    int elapsed = runTracker.getCheckpointSplitTicks().get(i);
+                    if (personalBest != null && i < personalBest.getCheckpointSplitTicks().size()) {
+                        int delta = elapsed - personalBest.getCheckpointSplitTicks().get(i);
                         splitHud.showSplit(elapsed, delta);
                     } else {
                         splitHud.showSplit(elapsed);
@@ -118,9 +120,9 @@ public class SplitsManager {
                 if (g.intersects(playerBox)) {
                     runTracker.hitFinish();
                     RunResult result = runTracker.toResult();
-                    long elapsed = result.getTotalTimeMillis();
+                    int elapsed = result.getTotalTimeTicks();
                     if (personalBest != null) {
-                        long delta = elapsed - personalBest.getTotalTimeMillis();
+                        int delta = elapsed - personalBest.getTotalTimeTicks();
                         splitHud.showSplit(elapsed, delta);
                     } else {
                         splitHud.showSplit(elapsed);
@@ -200,8 +202,8 @@ public class SplitsManager {
 
     public void stats() {
         UChat.chat("Active route: " + currentRouteName);
-        String prev = previousRun == null ? "None" : TimeUtils.formatMillis(previousRun.getTotalTimeMillis());
-        String pb   = personalBest == null ? "None" : TimeUtils.formatMillis(personalBest.getTotalTimeMillis());
+        String prev = previousRun == null ? "None" : TimeUtils.formatTicks(previousRun.getTotalTimeTicks());
+        String pb   = personalBest == null ? "None" : TimeUtils.formatTicks(personalBest.getTotalTimeTicks());
         UChat.chat("Previous run: " + prev);
         UChat.chat("Personal best: " + pb);
     }
