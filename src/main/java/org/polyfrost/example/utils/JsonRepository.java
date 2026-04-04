@@ -2,7 +2,7 @@ package org.polyfrost.example.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.polyfrost.example.ParkourSplits;
+import org.polyfrost.example.PksMod;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -31,7 +31,7 @@ public class JsonRepository<T> {
                 GSON.toJson(value, writer);
             }
         } catch (IOException e) {
-            ParkourSplits.LOGGER.error("Failed to save.", e);
+            PksMod.LOGGER.error("Failed to save.", e);
         }
     }
 
@@ -43,7 +43,7 @@ public class JsonRepository<T> {
         try (Reader reader = Files.newBufferedReader(saveFile)) {
             return GSON.fromJson(reader, type);
         } catch (IOException e) {
-            ParkourSplits.LOGGER.error("Failed to load.", e);
+            PksMod.LOGGER.error("Failed to load.", e);
             return null;
         }
     }
@@ -52,7 +52,7 @@ public class JsonRepository<T> {
         try {
             Files.deleteIfExists(saveFile);
         } catch (IOException e) {
-            ParkourSplits.LOGGER.error("Failed to clear save.", e);
+            PksMod.LOGGER.error("Failed to clear save.", e);
         }
     }
 }

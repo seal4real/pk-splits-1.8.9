@@ -324,7 +324,7 @@ public class SplitsManager {
                 String name = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).trim();
                 if (!name.isEmpty()) return name;
             } catch (IOException e) {
-                ParkourSplits.LOGGER.error("Failed to read active route.", e);
+                PksMod.LOGGER.error("Failed to read active route.", e);
             }
         }
         return DEFAULT_ROUTE;
@@ -336,7 +336,7 @@ public class SplitsManager {
             Files.createDirectories(file.getParentFile().toPath());
             Files.write(file.toPath(), name.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
-            ParkourSplits.LOGGER.error("Failed to save active route.", e);
+            PksMod.LOGGER.error("Failed to save active route.", e);
         }
     }
 }
