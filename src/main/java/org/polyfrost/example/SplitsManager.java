@@ -3,8 +3,6 @@ package org.polyfrost.example;
 import cc.polyfrost.oneconfig.libs.universal.UChat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.event.ClickEvent;
-import net.minecraft.event.HoverEvent;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
@@ -49,7 +47,6 @@ public class SplitsManager {
 
     private boolean wasInsideStart = false;
     private boolean enabled = true;
-    private String lastSharedCode = null;
 
     public SplitsManager(SplitHud splitHud) {
         this.configDir = new File(Minecraft.getMinecraft().mcDataDir, "config/pk-splits");
@@ -279,36 +276,13 @@ public class SplitsManager {
         }
 
         String code = RouteCodec.encode(route);
-        lastSharedCode = code;
+        GuiScreen.setClipboardString(code);
 
-        // Build a chat message with the code and a clickable [Copy] link
-        ChatComponentText message = new ChatComponentText("Route code for '" + currentRouteName + "': ");
-
+        ChatComponentText message = new ChatComponentText("Route code copied to clipboard: ");
         ChatComponentText codeText = new ChatComponentText(code);
         codeText.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GRAY));
         message.appendSibling(codeText);
-
-        message.appendSibling(new ChatComponentText(" "));
-
-        ChatComponentText copyLink = new ChatComponentText("[Copy]");
-        copyLink.setChatStyle(new ChatStyle()
-                .setColor(EnumChatFormatting.GREEN)
-                .setBold(true)
-                .setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/pks copy"))
-                .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        new ChatComponentText("Click to copy route code to clipboard"))));
-        message.appendSibling(copyLink);
-
         Minecraft.getMinecraft().thePlayer.addChatMessage(message);
-    }
-
-    public void copyLastSharedCode() {
-        if (lastSharedCode == null) {
-            UChat.chat("No route code to copy. Run /pks route share first.");
-            return;
-        }
-        GuiScreen.setClipboardString(lastSharedCode);
-        UChat.chat("Route code copied to clipboard!");
     }
 
     public void loadRoute(String name, String code) {

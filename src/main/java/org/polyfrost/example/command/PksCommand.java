@@ -13,11 +13,6 @@ public class PksCommand {
         PksMod.manager.stats();
     }
 
-    @SubCommand(description = "Copy the last shared route code to clipboard")
-    private void copy() {
-        PksMod.manager.copyLastSharedCode();
-    }
-
     @SubCommand(description = "Toggle splits on/off")
     private void toggle() {
         PksMod.manager.toggle();
